@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  php:
+    container_name: perfomance_php
+    build:
+      context: ./../
+      dockerfile: ./docker/php/Dockerfile
+      args:
+        - PUID=${PUID}
+        - PGID=${PGID}
+        - INSTALL_XDEBUG=${INSTALL_XDEBUG}
+    volumes:
+      - ./../:/var/www
+    networks:
+      - app-net
+
+  nginx:
+    container_name: perfomance_nginx
+    build:
+      context: ./nginx
+    ports:
+      - ${NGINX_HOST_HTTP_PORT}:80
+    volumes:
+      - ..:/var/www:rw
+    depends_on:
+      - php
+    networks:
+      - app-net
+
+  mysql:
+    container_name: perfomance_mysql
+    image: mysql:8
+    ports:
+        - 3306:3306
+    volumes:
+        -  ~/apps/mysql:/var/lib/mysql
+    environment:
+        - MYSQL_ROOT_PASSWORD=Adm1n!@345
+        - MYSQL_PASSWORD=root
+        - MYSQL_USER=perfomance_service
+    networks:
+        - app-net
+
+
+networks:
+  app-net:
+    external: true
